@@ -26,10 +26,11 @@ func (a *V5Adapter) APIVersion(ctx context.Context) (string, error) {
 	return version, err
 }
 
-// ServerStatus 获取服务器状态
+// ServerStatus 获取服务器状态 (V5: status.get)
 func (a *V5Adapter) ServerStatus(ctx context.Context) (map[string]interface{}, error) {
-	// TODO: implement V5 status.get
-	return nil, fmt.Errorf("not implemented")
+	var status map[string]interface{}
+	err := a.client.Call(ctx, "status.get", nil, &status)
+	return status, err
 }
 
 // RoleList V5 不支持角色管理

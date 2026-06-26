@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 // Level 日志级别
@@ -53,9 +54,10 @@ func Init(logFile string, level string) error {
 	} else {
 		w = os.Stderr
 	}
+	// 注意：不再使用 log.Lshortfile，改为手动通过 runtime.Caller 获取调用者位置
 	defaultLogger = &Logger{
 		level:  lvl,
-		logger: log.New(w, "", log.LstdFlags|log.Lshortfile),
+		logger: log.New(w, "", log.LstdFlags),
 	}
 	return nil
 }
@@ -75,7 +77,15 @@ func parseLevel(s string) Level {
 
 func (l *Logger) logf(level Level, prefix string, format string, v ...interface{}) {
 	if l.level <= level {
-		l.logger.Printf("[%s] "+format, append([]interface{}{prefix}, v...)...)
+		// 调用链: 业务代码 -> Errorf/Infof -> logf -> runtime.Caller
+		// skip=3 跳过 logf 和 Errorf/Infof 两层，到达真正的业务调用者
+		_, file, line, ok := runtime.Caller(3)
+		if ok {
+			file = filepath.Base(file)
+			l.logger.Printf("%s:%d [%s] "+format, append([]interface{}{file, line, prefix}, v...)...)
+		} else {
+			l.logger.Printf("[%s] "+format, append([]interface{}{prefix}, v...)...)
+		}
 	}
 }
 

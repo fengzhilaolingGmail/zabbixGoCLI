@@ -33,11 +33,11 @@ func (a *AuthManager) Refresh(ctx context.Context) error {
 		"user":     a.username,
 		"password": a.password,
 	}, &token); err != nil {
-		log.Errorf("Login failed: %v", err)
+		log.Errorf("user.login failed for user=%s: %v", a.username, err)
 		return fmt.Errorf("login failed: %w", err)
 	}
 
-	log.Infof("Login succeeded, token obtained")
+	log.Infof("user.login succeeded for user=%s", a.username)
 	a.token = token
 	a.expiry = time.Now().Add(15 * time.Minute) // Zabbix token 默认 15 分钟
 	a.client.SetAuthToken(token)

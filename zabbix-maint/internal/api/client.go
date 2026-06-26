@@ -45,7 +45,7 @@ func (c *JSONRPCClient) Call(ctx context.Context, method string, params interfac
 		"params":  params,
 		"id":      1,
 	}
-	if c.authToken != "" {
+	if c.authToken != "" && method != "apiinfo.version" {
 		reqBody["auth"] = c.authToken
 	}
 
@@ -54,7 +54,7 @@ func (c *JSONRPCClient) Call(ctx context.Context, method string, params interfac
 		return fmt.Errorf("marshal request failed: %w", err)
 	}
 
-	log.Debugf("JSON-RPC Request -> %s %s", method, string(body))
+	log.Debugf("JSON-RPC Request -> method=%s body=%s", method, string(body))
 
 	req, err := http.NewRequestWithContext(ctx, "POST", c.endpoint, bytes.NewReader(body))
 	if err != nil {
@@ -70,7 +70,7 @@ func (c *JSONRPCClient) Call(ctx context.Context, method string, params interfac
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Errorf("Unexpected status code: %d", resp.StatusCode)
+		log.Errorf("Unexpected HTTP status: %d", resp.StatusCode)
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
@@ -91,11 +91,11 @@ func (c *JSONRPCClient) Call(ctx context.Context, method string, params interfac
 	}
 
 	if rpcResp.Error != nil {
-		log.Errorf("Zabbix error: %s (code: %d)", rpcResp.Error.Message, rpcResp.Error.Code)
+		log.Errorf("Zabbix API error: method=%s code=%d message=%s request=%s", method, rpcResp.Error.Code, rpcResp.Error.Message, string(body))
 		return fmt.Errorf("zabbix error: %s (code: %d)", rpcResp.Error.Message, rpcResp.Error.Code)
 	}
 
-	log.Debugf("JSON-RPC Response <- result: %s", string(rpcResp.Result))
+	log.Debugf("JSON-RPC Response <- method=%s result=%s", method, string(rpcResp.Result))
 
 	if result != nil && rpcResp.Result != nil {
 		if err := json.Unmarshal(rpcResp.Result, result); err != nil {

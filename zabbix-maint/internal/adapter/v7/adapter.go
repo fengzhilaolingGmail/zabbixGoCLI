@@ -26,10 +26,11 @@ func (a *V7Adapter) APIVersion(ctx context.Context) (string, error) {
 	return version, err
 }
 
-// ServerStatus 获取服务器状态
+// ServerStatus 获取服务器状态 (V7: status.get)
 func (a *V7Adapter) ServerStatus(ctx context.Context) (map[string]interface{}, error) {
-	// TODO: implement V7 status.get
-	return nil, fmt.Errorf("not implemented")
+	var status map[string]interface{}
+	err := a.client.Call(ctx, "status.get", nil, &status)
+	return status, err
 }
 
 // RoleList 查询角色列表 (V7 专属)
