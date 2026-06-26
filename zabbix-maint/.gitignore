@@ -1,0 +1,99 @@
+# ── 编译产物 ──
+/build/
+/dist/
+*.exe
+*.dll
+*.so
+*.dylib
+zbx-cli
+zbx-cli-*
+
+# ── Go 相关 ──
+# 二进制文件（由 go build 生成）
+*.o
+*.a
+
+# 依赖目录（如果使用了 vendor 模式）
+/vendor/
+
+# 测试产物
+*.test
+*.out
+coverage.out
+coverage.html
+
+# ── IDE / 编辑器 ──
+# VS Code
+.vscode/
+*.code-workspace
+
+# GoLand / IntelliJ
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+#*#
+
+# ── 操作系统 ──
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+.directory
+.Trash-*
+
+# ── 日志与临时文件 ──
+*.log
+*.tmp
+*.bak
+*.old
+*.orig
+*.rej
+
+# ── 配置文件（敏感信息） ──
+# 本地配置文件（含密码）
+/.zbx-cli/
+/config/local.yaml
+/config/prod.yaml
+/config/private.yaml
+*.secret
+*.key
+*.pem
+
+# ── 脚本运行产物 ──
+# PowerShell 执行策略文件
+*.ps1.xml
+*.ps1.txt
+
+# ── 文档生成 ──
+# 自动生成的文档
+/doc/generated/
+
+# ── 打包产物 ──
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+
+# ── 其他 ──
+# 本地调试文件
+/debug
+__debug_bin
+
+# 环境变量文件
+.env
+.env.local
