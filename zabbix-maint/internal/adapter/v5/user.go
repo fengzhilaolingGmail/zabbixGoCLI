@@ -4,23 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"zabbix-maint/internal/api"
-	"zabbix-maint/internal/model"
+	"zabbix-maint/pkg/zabbix"
 )
 
-// V5Adapter 实现 Zabbix 5.x 版本的适配器
-type V5Adapter struct {
-	client *api.JSONRPCClient
-	auth   *api.AuthManager
-}
-
-// NewV5Adapter 创建 V5 适配器
-func NewV5Adapter(client *api.JSONRPCClient, auth *api.AuthManager) *V5Adapter {
-	return &V5Adapter{client: client, auth: auth}
-}
-
 // UserCreate 创建用户 (V5 版本)
-func (a *V5Adapter) UserCreate(ctx context.Context, req model.UserCreateReq) (string, error) {
+func (a *V5Adapter) UserCreate(ctx context.Context, req zabbix.UserCreateReq) (string, error) {
 	// TODO: implement V5 user.create
 	return "", fmt.Errorf("not implemented")
 }
@@ -50,13 +38,13 @@ func (a *V5Adapter) UserDelete(ctx context.Context, userID string) error {
 }
 
 // UserList 查询用户列表
-func (a *V5Adapter) UserList(ctx context.Context, filter string) ([]model.UnifiedUser, error) {
+func (a *V5Adapter) UserList(ctx context.Context, filter string) ([]zabbix.UnifiedUser, error) {
 	// TODO: implement V5 user.get
 	return nil, fmt.Errorf("not implemented")
 }
 
 // UserDetail 查询用户详情
-func (a *V5Adapter) UserDetail(ctx context.Context, userID string) (*model.UnifiedUser, error) {
+func (a *V5Adapter) UserDetail(ctx context.Context, userID string) (*zabbix.UnifiedUser, error) {
 	// TODO: implement V5 user.get
 	return nil, fmt.Errorf("not implemented")
 }

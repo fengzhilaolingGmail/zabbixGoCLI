@@ -28,13 +28,13 @@
 
 | 功能模块 | 说明 | 5.x | 7.x |
 |---------|------|-----|-----|
-| **用户管理** | 创建/禁用/启用/改密/删除/查看 | ✅ | ✅ |
-| **用户组管理** | 创建/禁用/清空/删除/查看 | ✅ | ✅ |
-| **主机管理** | 全克隆/查看列表/查看详情 | ✅ | ✅ |
-| **主机组管理** | 创建/清空/删除/查看 | ✅ | ✅ |
-| **聚合图形/仪表盘** | 创建/添加组件/查看 | ✅(Screen) | ✅(Dashboard) |
-| **批量操作** | 批量创建用户/批量克隆主机 | ✅ | ✅ |
-| **系统信息** | API 版本/服务器状态 | ✅ | ✅ |
+| **用户管理** | 创建/禁用/启用/改密/删除/查看 |  |  |
+| **用户组管理** | 创建/禁用/清空/删除/查看 |  |  |
+| **主机管理** | 全克隆/查看列表/查看详情 |  |  |
+| **主机组管理** | 创建/清空/删除/查看 |  |  |
+| **聚合图形/仪表盘** | 创建/添加组件/查看 |  (Screen) |  (Dashboard) |
+| **批量操作** | 批量创建用户/批量克隆主机 |  |  |
+| **系统信息** | API 版本/服务器状态 |  |  |
 
 **核心特性：**
 - **版本兼容层**：自动探测 Zabbix 版本，屏蔽 5.x 与 7.x API 差异
@@ -48,39 +48,38 @@
 ## 架构设计
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      CLI / Interactive Layer                  │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │  Interactive    │  │  One-Shot CMD   │  │  Config CMD  │ │
-│  │  Menu Mode      │  │  Mode           │  │  Mode        │ │
-│  └────────┬────────┘  └────────┬────────┘  └──────┬───────┘ │
-│           └────────────────────┴──────────────────┘         │
-├─────────────────────────────────────────────────────────────┤
-│                        Business Layer                        │
-│  ┌─────────┐ ┌──────────┐ ┌─────────┐ ┌──────────────────┐ │
-│  │ UserMgr │ │UserGrpMgr│ │ HostMgr │ │ DashboardMgr     │ │
-│  └────┬────┘ └────┬─────┘ └────┬────┘ └────────┬─────────┘ │
-│       └───────────┴────────────┴───────────────┘           │
-│                         │                                  │
-│              ┌──────────┴──────────┐                      │
-│              │   Unified Interface   │                      │
-│              │  (ZabbixOperator)     │                      │
-│              └──────────┬──────────┘                      │
-├─────────────────────────────────────────────────────────────┤
-│              Version Compatibility Layer                     │
-│  ┌──────────┐   ┌──────────┐   ┌────────┐               │
-│  │ V5Adapter│   │ V7Adapter│   │V6Adapter│  ...           │
-│  └────┬─────┘   └────┬─────┘   └───┬────┘               │
-│       └──────────────┴──────────────┘                     │
-│                      │                                       │
-│  ┌───────────────────┼──────────────────────────────────┐  │
-│  │         Transport Layer (HTTP Client)                  │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │  │
-│  │  │ JSON-RPC    │  │ Retry/Backoff│  │ Auth Manager│   │  │
-│  │  │ Client      │  │ Middleware   │  │ (Token/Key) │   │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘   │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+---------------------------------------------------------------
+                      CLI / Interactive Layer
+   -----------------    -----------------    --------------
+   |  Interactive   |   |  One-Shot CMD   |   |  Config CMD  |
+   |  Menu Mode     |   |  Mode           |   |  Mode        |
+   --------+---------   --------+---------   -------+-------
+            ---------------------+----------------
+---------------------------------------------------------------
+                        Business Layer
+   ---------   ----------   ---------   ------------------
+   | UserMgr | |UserGrpMgr| | HostMgr | | DashboardMgr     |
+   ----+-----   -----+-----   ----+----   --------+---------
+        -----------+------------+----------
+                      |
+           +----------+----------+
+           |   Unified Interface   |
+           |  (ZabbixOperator)     |
+           +----------+----------+
+---------------------------------------------------------------
+               Version Compatibility Layer
+   +----------+   +----------+   +--------+
+   | V5Adapter|   | V7Adapter|   |V6Adapter|  ...
+   ----+------    ----+------    ---+-----
+        ------------+-------------
+                      |
+   +------------------+------------------+
+   |         Transport Layer (HTTP Client)                  |
+   |  +-------------+  +-------------+  +-------------+     |
+   |  | JSON-RPC    |  | Retry/Backoff|  | Auth Manager|     |
+   |  | Client      |  | Middleware   |  | (Token/Key) |     |
+   |  +-------------+  +-------------+  +-------------+     |
+   +--------------------------------------------------------+
 ```
 
 ---
@@ -138,10 +137,10 @@ zbx-cli config list
 输出示例：
 
 ```
-名称           URL                                  版本    默认
-─────────────────────────────────────────────────────────────────
-prod-zbx5      http://zabbix5.example.com/api_jsonrpc.php  auto    *
-prod-zbx7      http://zabbix7.example.com/api_jsonrpc.php  auto    
+NAME           ENDPOINT
+---------------------------------------------------
+prod-zbx5      http://zabbix5.example.com/api_jsonrpc.php
+prod-zbx7      http://zabbix7.example.com/api_jsonrpc.php
 ```
 
 ### 3. 测试连接
@@ -163,57 +162,56 @@ zbx-cli
 交互式界面：
 
 ```
-═══════════════════════════════════════════════════════════════
-  Zabbix 维护工具 v1.0
-  当前实例: prod-zbx5 [Zabbix 5.0 LTS]
-  连接状态: ✅ 已连接
-═══════════════════════════════════════════════════════════════
+===============================================================
+  Zabbix CLI Tool v1.0
+  Instance: prod-zbx5 [Zabbix 5.0 LTS]
+  Status:   Connected
+===============================================================
 
-  主菜单:
+  Main Menu:
 
-  1. 用户管理
-  2. 用户组管理
-  3. 主机管理
-  4. 主机组管理
-  5. 聚合图形 / 仪表盘管理
-  6. 批量操作
-  7. 系统信息
-  0. 退出
+  1. User Management
+  2. User Group Management
+  3. Host Management
+  4. Host Group Management
+  5. Dashboard / Screen Management
+  6. Batch Operations
+  7. System Info
+  0. Back/Exit
 
-  请选择 [0-7]: 1
+  Select [0-7]: 1
 
-═══════════════════════════════════════════════════════════════
-  用户管理
-═══════════════════════════════════════════════════════════════
+===============================================================
+  User Management
+===============================================================
 
-  1. 创建用户
-  2. 禁用用户
-  3. 启用用户
-  4. 修改密码
-  5. 删除用户
-  6. 查看用户列表
-  7. 查看用户详情
-  0. 返回上级
+  1. Create User
+  2. Disable User
+  3. Enable User
+  4. Change Password
+  5. Delete User
+  6. List Users
+  7. User Detail
+  0. Back/Exit
 
-  请选择 [0-7]: 1
-  → 请输入用户名: zhangsan
-  → 请输入姓名: 张三
-  → 请输入密码: ********
-  → 请选择用户组 (多选, 逗号分隔):
+  Select [0-7]: 1
+  >> Enter username: zhangsan
+  >> Enter full name: Zhang San
+  >> Enter password: ********
+  >> Select user group (multi-select, comma-separated):
       1. Guests (ID: 7)
       2. Zabbix administrators (ID: 8)
       3. Disabled (ID: 9)
-    请选择: 1
-  → 请选择角色 (仅 7.x 生效, 当前实例为 5.x 自动跳过)
+    Select: 1
+  >> Select role (only for 7.x, auto-skipped for 5.x)
 
-  ⚠️  请确认操作:
-      创建用户: zhangsan
-      用户组: Guests
-      确认执行? [Y/n]: Y
+  [CONFIRM] Create user: zhangsan
+            Group: Guests
+            Confirm? [Y/n]: Y
 
-  ✅ 用户创建成功! 用户ID: 10001
+  [OK] User created! UserID: 10001
 
-  按 Enter 继续...
+  Press Enter to continue...
 ```
 
 ### 5. 使用一次性命令模式
@@ -222,7 +220,7 @@ zbx-cli
 # 创建用户
 zbx-cli -i prod-zbx5 user create \
   --alias zhangsan \
-  --name "张三" \
+  --name "Zhang San" \
   --group 7 \
   --password "Temp123!"
 
@@ -232,7 +230,7 @@ zbx-cli -i prod-zbx5 user disable --id 10001
 # 修改密码
 zbx-cli -i prod-zbx5 user passwd --id 10001 --password "NewPass456!"
 
-# 克隆主机 (7.x 原生支持)
+# 克隆主机 (7.x native support)
 zbx-cli -i prod-zbx7 host clone \
   --src 10084 \
   --name web-clone-01 \
@@ -251,7 +249,7 @@ zbx-cli -i prod-zbx7 host clone \
 instances:
   - name: "prod-zbx5"
     endpoint: "http://zabbix5.example.com/api_jsonrpc.php"
-    version: "5.0"          # 自动检测，也可强制指定
+    version: "5.0"          # auto-detect, or force specify
     auth:
       username: "Admin"
       password: "zabbix"
@@ -288,9 +286,6 @@ zbx-cli config remove prod-zbx5
 
 # 测试连接
 zbx-cli config test prod-zbx5
-
-# 版本探测（无需预先配置）
-zbx-cli detect --url http://zabbix.example.com/api_jsonrpc.php
 ```
 
 ---
@@ -301,21 +296,23 @@ zbx-cli detect --url http://zabbix.example.com/api_jsonrpc.php
 
 | 选项 | 说明 | 示例 |
 |------|------|------|
-| `-i, --instance` | 指定实例名称 | `-i prod-zbx5` |
-| `-v, --verbose` | 详细输出模式 | `-v` |
-| `-h, --help` | 显示帮助 | `-h` |
+| `-i` | 指定实例名称 | `-i prod-zbx5` |
+| `-h` | 显示帮助 | `-h` |
+| `-v` | 显示版本 | `-v` |
 
 ### 交互式模式
 
 ```bash
 zbx-cli -i <instance_name>
 # 或
-zbx-cli                    # 使用默认实例
+zbx-cli                    # use default instance
 ```
 
 进入交互式菜单后，使用数字键选择菜单项，`0` 返回上级或退出。
 
 ### 一次性命令模式
+
+一次性命令需要配合 `-i <instance>` 使用。
 
 #### 用户管理
 
@@ -323,10 +320,10 @@ zbx-cli                    # 使用默认实例
 # 创建用户
 zbx-cli -i <instance> user create \
   --alias <username> \
-  [--name <fullname>] \
-  [--group <group_id>] \
-  [--password <password>] \
-  [--role <role_id>]        # 仅 7.x 生效
+  --name <fullname> \
+  --group <group_id> \
+  --password <password> \
+  [--role <role_id>]        # only for 7.x
 
 # 禁用用户
 zbx-cli -i <instance> user disable --id <user_id>
@@ -351,12 +348,13 @@ zbx-cli -i <instance> user detail --id <user_id>
 
 ```bash
 # 创建用户组
-zbx-cli -i <instance> usergroup create \
-  --name <group_name> \
-  [--right <permission:hostgroup_id>]  # 例如: --right 2:15 (2=只读, 3=读写)
+zbx-cli -i <instance> usergroup create --name <group_name>
 
 # 禁用用户组
 zbx-cli -i <instance> usergroup disable --id <group_id>
+
+# 启用用户组
+zbx-cli -i <instance> usergroup enable --id <group_id>
 
 # 清空用户组（移除所有用户）
 zbx-cli -i <instance> usergroup clear --id <group_id>
@@ -375,9 +373,7 @@ zbx-cli -i <instance> usergroup list
 zbx-cli -i <instance> host clone \
   --src <source_host_id> \
   --name <new_host_name> \
-  [--ip <new_ip>] \
-  [--group <group_ids>] \
-  [--items] [--triggers] [--graphs]
+  [--ip <new_ip>]
 
 # 查看主机列表
 zbx-cli -i <instance> host list
@@ -406,46 +402,10 @@ zbx-cli -i <instance> hostgroup list
 
 ```bash
 # 创建聚合图形/仪表盘 (V5: Screen, V7: Dashboard)
-zbx-cli -i <instance> dashboard create \
-  --name <name> \
-  [--owner <user_id>]
-
-# 添加 Widget / 子项
-zbx-cli -i <instance> dashboard add \
-  --id <dashboard_id> \
-  --type <widget_type> \
-  [--resource <resource_id>] \
-  [--graphid <graph_id>] \
-  --x <x> --y <y> --w <width> --h <height>
+zbx-cli -i <instance> dashboard create --name <name>
 
 # 查看列表
 zbx-cli -i <instance> dashboard list
-```
-
-#### 批量操作
-
-```bash
-# 批量创建用户（从 CSV 文件）
-zbx-cli -i <instance> batch user-create --file users.csv
-
-# 批量克隆主机（从 CSV 文件）
-zbx-cli -i <instance> batch host-clone --file hosts.csv
-```
-
-**CSV 格式示例（users.csv）：**
-
-```csv
-alias,name,password,group_ids,role_id
-zhangsan,张三,Temp123!,7,1
-lisi,李四,Temp123!,8,1
-```
-
-**CSV 格式示例（hosts.csv）：**
-
-```csv
-source_host_id,new_host_name,new_ip,group_ids
-10084,web-clone-01,192.168.1.100,2
-10084,web-clone-02,192.168.1.101,2
 ```
 
 #### 系统信息
@@ -466,14 +426,14 @@ zbx-cli -i <instance> system status
 
 | 功能 | Zabbix 5.x | Zabbix 7.x |
 |------|-----------|-----------|
-| **用户禁用** | `user.update` (status=1) | `user.update` (roleid=禁用角色) |
-| **用户启用** | `user.update` (status=0) | `user.update` (roleid=默认角色) |
-| **用户创建** | `user.create` (usrgrps) | `user.create` (需 roleid) |
+| **用户禁用** | `user.update` (status=1) | `user.update` (roleid=disabled role) |
+| **用户启用** | `user.update` (status=0) | `user.update` (roleid=default role) |
+| **用户创建** | `user.create` (usrgrps) | `user.create` (requires roleid) |
 | **用户组禁用** | `usergroup.update` (users_status=1) | `usergroup.update` (userdirectoryid=0) |
-| **主机组清空** | `hostgroup.massremove` | `hostgroup.update` (清空 hosts) |
-| **主机全克隆** | 手动实现（get→create→copy items） | 原生 `host.clone` |
+| **主机组清空** | `hostgroup.massremove` | `hostgroup.update` (clear hosts) |
+| **主机全克隆** | manual implementation (get->create->copy items) | native `host.clone` |
 | **聚合图形** | `screen.create` / `screenitem.create` | `dashboard.create` / `dashboard.widget.create` |
-| **角色管理** | 不支持 | `role.get` |
+| **角色管理** | not supported | `role.get` |
 
 **关键点：**
 - 工具启动时会自动调用 `apiinfo.version` 探测 Zabbix 版本
@@ -487,57 +447,60 @@ zbx-cli -i <instance> system status
 ```
 zabbix-maint/
 ├── cmd/
-│   └── zbx-cli/              # CLI 入口
+│   └── zbx-cli/              # CLI entry
 │       └── main.go
 ├── internal/
-│   ├── cli/                  # CLI 交互层
-│   │   ├── interactive.go    # 交互式菜单主循环
-│   │   ├── menu.go           # 菜单树定义
-│   │   ├── prompt.go         # 交互式输入组件（String/Password/Select/Confirm）
-│   │   ├── table.go          # 表格渲染器
-│   │   ├── oneshot.go        # 一次性命令处理
-│   │   └── config.go         # 配置管理命令
-│   ├── adapter/              # 版本适配器
-│   │   ├── v5/               # Zabbix 5.x 适配器
-│   │   │   ├── user.go       # 用户管理（status 字段控制）
-│   │   │   ├── usergroup.go  # 用户组管理（users_status）
-│   │   │   ├── host.go       # 主机管理（手动全克隆）
-│   │   │   ├── hostgroup.go  # 主机组管理（massremove）
-│   │   │   ├── screen.go     # 聚合图形（screen API）
-│   │   │   └── adapter.go    # V5 适配器组装
-│   │   └── v7/               # Zabbix 7.x 适配器
-│   │       ├── user.go       # 用户管理（roleid 控制）
-│   │       ├── usergroup.go  # 用户组管理（userdirectoryid）
-│   │       ├── host.go       # 主机管理（host.clone）
-│   │       ├── hostgroup.go  # 主机组管理（update 清空）
-│   │       ├── dashboard.go  # 仪表盘（dashboard API）
-│   │       └── adapter.go    # V7 适配器组装
-│   ├── api/                  # JSON-RPC 传输层
-│   │   ├── client.go         # HTTP JSON-RPC 客户端
-│   │   ├── auth.go           # 认证管理器（Token 刷新）
-│   │   ├── retry.go          # 重试策略（指数退避）
-│   │   └── error.go          # 错误码定义
-│   ├── model/                # 统一数据模型（Version-Agnostic）
+│   ├── cli/                  # CLI interactive layer
+│   │   ├── interactive.go    # interactive menu loop
+│   │   ├── menu.go           # menu tree definition
+│   │   ├── prompt.go         # interactive input components
+│   │   ├── table.go          # table renderer
+│   │   ├── oneshot.go        # one-shot command handler
+│   │   └── config.go         # config management commands
+│   ├── adapter/              # version adapters
+│   │   ├── v5/               # Zabbix 5.x adapter
+│   │   │   ├── user.go       # user management (status field)
+│   │   │   ├── usergroup.go  # user group management (users_status)
+│   │   │   ├── host.go       # host management (manual clone)
+│   │   │   ├── hostgroup.go  # host group management (massremove)
+│   │   │   ├── screen.go     # screen (screen API)
+│   │   │   └── adapter.go    # V5 adapter assembly
+│   │   └── v7/               # Zabbix 7.x adapter
+│   │       ├── user.go       # user management (roleid)
+│   │       ├── usergroup.go  # user group management (userdirectoryid)
+│   │       ├── host.go       # host management (host.clone)
+│   │       ├── hostgroup.go  # host group management (update clear)
+│   │       ├── dashboard.go  # dashboard (dashboard API)
+│   │       └── adapter.go    # V7 adapter assembly
+│   ├── api/                  # JSON-RPC transport layer
+│   │   ├── client.go         # HTTP JSON-RPC client
+│   │   ├── auth.go           # auth manager (token refresh)
+│   │   ├── retry.go          # retry strategy (exponential backoff)
+│   │   └── error.go          # error code definitions
+│   ├── model/                # unified data models (version-agnostic)
 │   │   ├── user.go           # UserCreateReq / UnifiedUser
 │   │   ├── host.go           # HostCloneReq / UnifiedHost
 │   │   ├── dashboard.go      # DashboardCreateReq / UnifiedDashboard
 │   │   └── common.go         # UnifiedUserGroup / UnifiedRole
-│   ├── service/              # 业务编排层
-│   │   └── batch.go          # 批量操作（CSV 解析 + 事务）
-│   ├── config/               # 配置文件管理
-│   │   ├── manager.go        # 配置 CRUD 操作
+│   ├── service/              # business orchestration
+│   │   └── batch.go          # batch operations (CSV + transaction)
+│   ├── config/               # config file management
+│   │   ├── manager.go        # config CRUD operations
 │   │   └── model.go          # Config / InstanceConfig / AuthConfig
-│   └── version/              # 版本检测与路由
-│       ├── detector.go       # apiinfo.version 探测
-│       └── router.go         # 适配器工厂 / 版本路由
+│   └── version/              # version detection & routing
+│       ├── detector.go       # apiinfo.version detection
+│       └── router.go         # adapter factory / version routing
 ├── pkg/
-│   └── zabbix/               # 对外暴露的 SDK 包
-│       ├── client.go         # SDK 客户端封装
-│       ├── interface.go      # ZabbixOperator 统一接口
-│       └── types.go          # SDK 类型定义
+│   └── zabbix/               # exposed SDK package
+│       ├── client.go         # SDK client wrapper
+│       ├── interface.go      # ZabbixOperator unified interface
+│       └── types.go          # SDK type definitions
 ├── config/
-│   └── example.yaml          # 配置文件示例
+│   └── example.yaml          # config file example
 ├── go.mod
+├── build.ps1                 # Windows build script (PowerShell)
+├── build.bat                 # Windows build script (Batch)
+├── Makefile                  # Make build script
 └── README.md
 ```
 
@@ -549,10 +512,15 @@ zabbix-maint/
 
 ```bash
 # 开发调试
-go run ./cmd/zbx-cli -- -i prod-zbx5 user list
+go run ./cmd/zbx-cli -i prod-zbx5 user list
 
 # 编译可执行文件
 go build -o zbx-cli.exe ./cmd/zbx-cli
+
+# 使用一键编译脚本（Windows）
+.\build.ps1          # all platforms
+.\build.ps1 -Windows # Windows only
+.\build.ps1 -Linux   # cross-compile Linux only
 ```
 
 ### 测试
@@ -564,9 +532,6 @@ go test ./...
 # 运行指定包测试
 go test ./internal/adapter/v5/...
 go test ./internal/api/...
-
-# 集成测试（需要 Docker）
-go test ./... -tags=integration
 ```
 
 ### 添加新版本适配器（如 8.x）
@@ -604,10 +569,10 @@ curl -X POST http://zabbix.example.com/api_jsonrpc.php \
 
 ### Q: 7.x 实例下创建用户提示需要 roleid？
 
-A: Zabbix 7.0 移除了 `status` 字段，用户状态通过 Role 控制。创建用户时必须指定角色 ID。可用以下命令查看可用角色：
+A: Zabbix 7.0 移除了 `status` 字段，用户状态通过 Role 控制。创建用户时必须指定角色 ID。
 
 ```bash
-zbx-cli -i prod-zbx7 system role-list
+zbx-cli -i prod-zbx7 user create --alias zhangsan --group 7 --password Temp123! --role 1
 ```
 
 ### Q: 5.x 主机克隆很慢？
@@ -624,9 +589,10 @@ A: 当前版本密码以明文存储在 `~/.zbx-cli/config.yaml` 中。后续版
 
 ### Q: 如何调试 API 请求？
 
-A: 使用 `-v` 选项开启详细输出：
+A: 查看 `internal/api/client.go` 中的 `Call` 方法，可以添加日志输出请求和响应内容。
 
 ```bash
+# 或使用 verbose 模式（如已实现）
 zbx-cli -v -i prod-zbx5 user list
 ```
 

@@ -4,17 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"zabbix-maint/internal/api"
-	"zabbix-maint/internal/model"
+	"zabbix-maint/pkg/zabbix"
 )
 
-// V5Adapter 用户组相关方法
-type UserGroupOps struct {
-	client *api.JSONRPCClient
-}
-
 // UserGroupCreate 创建用户组
-func (a *V5Adapter) UserGroupCreate(ctx context.Context, req model.UserGroupCreateReq) (string, error) {
+func (a *V5Adapter) UserGroupCreate(ctx context.Context, req zabbix.UserGroupCreateReq) (string, error) {
 	// TODO: implement V5 usergroup.create
 	return "", fmt.Errorf("not implemented")
 }
@@ -44,7 +38,7 @@ func (a *V5Adapter) UserGroupDelete(ctx context.Context, groupID string) error {
 }
 
 // UserGroupList 查询用户组列表
-func (a *V5Adapter) UserGroupList(ctx context.Context, filter string) ([]model.UnifiedUserGroup, error) {
+func (a *V5Adapter) UserGroupList(ctx context.Context, filter string) ([]zabbix.UnifiedUserGroup, error) {
 	// TODO: implement V5 usergroup.get
 	return nil, fmt.Errorf("not implemented")
 }

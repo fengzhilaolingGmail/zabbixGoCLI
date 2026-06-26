@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"zabbix-maint/internal/api"
-	"zabbix-maint/internal/model"
+	"zabbix-maint/pkg/zabbix"
 )
 
 // HostFullClone 主机全克隆 (V5 手动实现)
-func (a *V5Adapter) HostFullClone(ctx context.Context, req model.HostCloneReq) (string, error) {
+func (a *V5Adapter) HostFullClone(ctx context.Context, req zabbix.HostCloneReq) (string, error) {
 	// 1. 获取源主机完整配置
 	var hosts []map[string]interface{}
 	err := a.client.Call(ctx, "host.get", map[string]interface{}{
@@ -68,13 +67,13 @@ func (a *V5Adapter) cloneItems(ctx context.Context, hostID string, items []inter
 }
 
 // HostList 查询主机列表
-func (a *V5Adapter) HostList(ctx context.Context, filter string) ([]model.UnifiedHost, error) {
+func (a *V5Adapter) HostList(ctx context.Context, filter string) ([]zabbix.UnifiedHost, error) {
 	// TODO: implement V5 host.get
 	return nil, fmt.Errorf("not implemented")
 }
 
 // HostDetail 查询主机详情
-func (a *V5Adapter) HostDetail(ctx context.Context, hostID string) (*model.UnifiedHost, error) {
+func (a *V5Adapter) HostDetail(ctx context.Context, hostID string) (*zabbix.UnifiedHost, error) {
 	// TODO: implement V5 host.get
 	return nil, fmt.Errorf("not implemented")
 }

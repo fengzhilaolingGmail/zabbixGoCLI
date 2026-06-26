@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"zabbix-maint/internal/api"
-	"zabbix-maint/internal/model"
+	"zabbix-maint/pkg/zabbix"
 )
 
 // HostGroupCreate 创建主机组
@@ -27,7 +26,7 @@ func (a *V7Adapter) HostGroupDelete(ctx context.Context, groupID string) error {
 }
 
 // HostGroupList 查询主机组列表
-func (a *V7Adapter) HostGroupList(ctx context.Context, filter string) ([]model.UnifiedHostGroup, error) {
+func (a *V7Adapter) HostGroupList(ctx context.Context, filter string) ([]zabbix.UnifiedHostGroup, error) {
 	// TODO: implement V7 hostgroup.get
 	return nil, fmt.Errorf("not implemented")
 }

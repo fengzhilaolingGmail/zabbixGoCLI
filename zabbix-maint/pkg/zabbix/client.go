@@ -1,10 +1,7 @@
 package zabbix
 
 import (
-	"context"
 	"fmt"
-
-	"zabbix-maint/internal/api"
 )
 
 // Client Zabbix 客户端封装

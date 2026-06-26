@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"zabbix-maint/internal/api"
-	"zabbix-maint/internal/model"
 	"zabbix-maint/pkg/zabbix"
 )
 
@@ -34,7 +33,7 @@ func (a *V5Adapter) ServerStatus(ctx context.Context) (map[string]interface{}, e
 }
 
 // RoleList V5 不支持角色管理
-func (a *V5Adapter) RoleList(ctx context.Context, filter string) ([]model.UnifiedRole, error) {
+func (a *V5Adapter) RoleList(ctx context.Context, filter string) ([]zabbix.UnifiedRole, error) {
 	return nil, fmt.Errorf("role management not supported in V5")
 }
 

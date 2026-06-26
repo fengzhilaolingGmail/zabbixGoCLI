@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"zabbix-maint/internal/config"
 	"zabbix-maint/internal/version"
@@ -39,7 +38,7 @@ func RunInteractiveMode(ctx context.Context, instanceName string) error {
 
 		if choice == 0 {
 			if tree.Current.Parent == nil {
-				fmt.Println("再见!")
+				fmt.Println("Bye!")
 				return nil
 			}
 			tree.Current = tree.Current.Parent
@@ -53,33 +52,34 @@ func RunInteractiveMode(ctx context.Context, instanceName string) error {
 		} else if selected.Action != nil {
 			clearScreen()
 			printHeader(cfg, ver)
-			fmt.Printf("\n【%s】\n\n", selected.Title)
+			fmt.Printf("\n[%s]\n\n", selected.Title)
 
 			if err := selected.Action(ctx, client, ver); err != nil {
-				fmt.Printf("❌ 操作失败: %v\n", err)
+				fmt.Printf("Error: %v\n", err)
 			}
 
-			fmt.Println("\n按 Enter 继续...")
+			fmt.Println("\nPress Enter to continue...")
 			fmt.Scanln()
 		}
 	}
 }
 
 func connect(ctx context.Context, cfg *config.InstanceConfig) (zabbix.ZabbixOperator, version.Version, error) {
-	// TODO: implement connection logic
-	return nil, "", nil
+	router := version.NewRouter()
+	return router.Connect(ctx, cfg)
 }
 
 func clearScreen() {
-	// TODO: implement screen clearing
+	// Simple cross-platform clear (Windows)
+	fmt.Print("\033[H\033[2J")
 }
 
 func printHeader(cfg *config.InstanceConfig, ver version.Version) {
-	fmt.Println("═══════════════════════════════════════════════════════════════")
-	fmt.Printf("  Zabbix 维护工具 v1.0\n")
-	fmt.Printf("  当前实例: %s [Zabbix %s]\n", cfg.Name, ver)
-	fmt.Printf("  连接状态: ✅ 已连接\n")
-	fmt.Println("═══════════════════════════════════════════════════════════════")
+	fmt.Println("===============================================================")
+	fmt.Printf("  Zabbix CLI Tool v1.0\n")
+	fmt.Printf("  Instance: %s [Zabbix %s]\n", cfg.Name, ver)
+	fmt.Printf("  Status:   Connected\n")
+	fmt.Println("===============================================================")
 }
 
 func printMenu(node *MenuNode) {
@@ -91,12 +91,12 @@ func printMenu(node *MenuNode) {
 		}
 		fmt.Printf("  %d. %s%s\n", i+1, sub.Title, hint)
 	}
-	fmt.Println("  0. 返回上级")
+	fmt.Println("  0. Back/Exit")
 	fmt.Println()
 }
 
 func readChoice(max int) (int, error) {
-	fmt.Printf("  请选择 [0-%d]: ", max)
+	fmt.Printf("  Select [0-%d]: ", max)
 	var choice int
 	_, err := fmt.Scanln(&choice)
 	if err != nil || choice < 0 || choice > max {

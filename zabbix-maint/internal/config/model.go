@@ -40,9 +40,9 @@ type RetryConfig struct {
 
 // InstanceConfig 实例配置
 type InstanceConfig struct {
-	Name     string `yaml:"name"`
-	Endpoint string `yaml:"endpoint"`
-	Version  string `yaml:"version"`
+	Name     string     `yaml:"name"`
+	Endpoint string     `yaml:"endpoint"`
+	Version  string     `yaml:"version"`
 	Auth     AuthConfig `yaml:"auth"`
 }
 
@@ -59,14 +59,65 @@ type Config struct {
 	Retry     RetryConfig      `yaml:"retry"`
 }
 
-// Load 加载配置
+// LoadAll 加载全部配置
+func LoadAll() (*Config, error) {
+	path := ConfigFilePath()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return &Config{}, nil
+		}
+		return nil, err
+	}
+
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("parse config failed: %w", err)
+	}
+	return &cfg, nil
+}
+
+// Load 加载指定实例配置
 func Load(instanceName string) (*InstanceConfig, error) {
-	// TODO: implement config loading
-	return nil, fmt.Errorf("config loading not implemented")
+	cfg, err := LoadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range cfg.Instances {
+		if cfg.Instances[i].Name == instanceName {
+			inst := cfg.Instances[i]
+			return &inst, nil
+		}
+	}
+
+	if instanceName == "" {
+		defaultName := cfg.Global.DefaultInstance
+		if defaultName != "" {
+			for i := range cfg.Instances {
+				if cfg.Instances[i].Name == defaultName {
+					inst := cfg.Instances[i]
+					return &inst, nil
+				}
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("instance not found: %s", instanceName)
 }
 
 // Save 保存配置
 func Save(cfg *Config) error {
-	// TODO: implement config saving
-	return fmt.Errorf("config saving not implemented")
+	path := ConfigFilePath()
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, data, 0600)
 }

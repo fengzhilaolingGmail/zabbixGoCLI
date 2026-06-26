@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"zabbix-maint/internal/api"
-	"zabbix-maint/internal/model"
 	"zabbix-maint/pkg/zabbix"
 )
 
@@ -34,7 +33,7 @@ func (a *V7Adapter) ServerStatus(ctx context.Context) (map[string]interface{}, e
 }
 
 // RoleList 查询角色列表 (V7 专属)
-func (a *V7Adapter) RoleList(ctx context.Context, filter string) ([]model.UnifiedRole, error) {
+func (a *V7Adapter) RoleList(ctx context.Context, filter string) ([]zabbix.UnifiedRole, error) {
 	// TODO: implement V7 role.get
 	return nil, fmt.Errorf("not implemented")
 }

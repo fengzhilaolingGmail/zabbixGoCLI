@@ -4,23 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"zabbix-maint/internal/api"
-	"zabbix-maint/internal/model"
+	"zabbix-maint/pkg/zabbix"
 )
 
-// V7Adapter 实现 Zabbix 7.x 版本的适配器
-type V7Adapter struct {
-	client *api.JSONRPCClient
-	auth   *api.AuthManager
-}
-
-// NewV7Adapter 创建 V7 适配器
-func NewV7Adapter(client *api.JSONRPCClient, auth *api.AuthManager) *V7Adapter {
-	return &V7Adapter{client: client, auth: auth}
-}
-
 // UserCreate 创建用户 (V7 版本，需要 roleid)
-func (a *V7Adapter) UserCreate(ctx context.Context, req model.UserCreateReq) (string, error) {
+func (a *V7Adapter) UserCreate(ctx context.Context, req zabbix.UserCreateReq) (string, error) {
 	// TODO: implement V7 user.create with roleid
 	return "", fmt.Errorf("not implemented")
 }
@@ -50,13 +38,13 @@ func (a *V7Adapter) UserDelete(ctx context.Context, userID string) error {
 }
 
 // UserList 查询用户列表
-func (a *V7Adapter) UserList(ctx context.Context, filter string) ([]model.UnifiedUser, error) {
+func (a *V7Adapter) UserList(ctx context.Context, filter string) ([]zabbix.UnifiedUser, error) {
 	// TODO: implement V7 user.get
 	return nil, fmt.Errorf("not implemented")
 }
 
 // UserDetail 查询用户详情
-func (a *V7Adapter) UserDetail(ctx context.Context, userID string) (*model.UnifiedUser, error) {
+func (a *V7Adapter) UserDetail(ctx context.Context, userID string) (*zabbix.UnifiedUser, error) {
 	// TODO: implement V7 user.get
 	return nil, fmt.Errorf("not implemented")
 }
