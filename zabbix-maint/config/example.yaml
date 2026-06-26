@@ -1,0 +1,22 @@
+instances:
+  - name: "prod-zbx5"
+    endpoint: "http://zabbix5.example.com/api_jsonrpc.php"
+    version: "5.0"          # 自动检测，也可强制指定
+    auth:
+      username: "Admin"
+      password: "zabbix"
+
+  - name: "prod-zbx7"
+    endpoint: "http://zabbix7.example.com/api_jsonrpc.php"
+    version: "7.0"
+    auth:
+      username: "Admin"
+      password: "zabbix"
+
+global:
+  timeout: 30s
+  retry:
+    max_retries: 3
+    base_delay: 500ms
+  log_level: "info"
+  default_instance: "prod-zbx5"
