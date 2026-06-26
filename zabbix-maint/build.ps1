@@ -12,88 +12,76 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# ─────────────────────────────────────────────
-# 脚本配置
-# ─────────────────────────────────────────────
+# ============================================================
+# Script Config
+# ============================================================
 $ProjectName = "zbx-cli"
 $ModuleName = "zabbix-maint"
 $CmdPath = "./cmd/$ProjectName"
 $OutputDir = "./build"
 $LdFlagsBase = "-s -w"
 
-# ─────────────────────────────────────────────
-# 帮助信息
-# ─────────────────────────────────────────────
+# ============================================================
+# Help
+# ============================================================
 if ($Help) {
-    @"
-Zabbix CLI 一键编译脚本
-
-用法:
-    .\build.ps1 [选项]
-
-选项:
-    -Version <string>   指定版本号 (如: 1.0.0)
-    -Commit <string>    指定 Git Commit Hash
-    -BuildTime <string> 指定编译时间
-    -Clean              清理 build 目录
-    -Test               先运行测试再编译
-    -Windows            仅编译 Windows 版本
-    -Linux              仅编译 Linux 版本 (amd64 + arm64)
-    -All                编译所有平台 (默认行为)
-    -Help               显示帮助
-
-示例:
-    # 编译所有平台 (默认)
-    .\build.ps1
-
-    # 仅编译 Windows 版本
-    .\build.ps1 -Windows
-
-    # 先运行测试，再编译 Linux 版本
-    .\build.ps1 -Test -Linux
-
-    # 带版本号编译所有平台
-    .\build.ps1 -Version "1.0.0" -Commit "abc123"
-
-    # 清理构建产物
-    .\build.ps1 -Clean
-"@ | Write-Host
+    Write-Host ""
+    Write-Host "Zabbix CLI Build Script"
+    Write-Host ""
+    Write-Host "Usage: .\build.ps1 [options]"
+    Write-Host ""
+    Write-Host "Options:"
+    Write-Host "  -Version <string>   Set version (e.g. 1.0.0)"
+    Write-Host "  -Commit  <string>   Set Git commit hash"
+    Write-Host "  -BuildTime <string> Set build time"
+    Write-Host "  -Clean              Clean build directory"
+    Write-Host "  -Test               Run tests before build"
+    Write-Host "  -Windows            Build Windows only"
+    Write-Host "  -Linux              Build Linux only (cross-compile)"
+    Write-Host "  -All                Build all platforms (default)"
+    Write-Host "  -Help               Show this help"
+    Write-Host ""
+    Write-Host "Examples:"
+    Write-Host "  .\build.ps1                  # Build all"
+    Write-Host "  .\build.ps1 -Windows         # Build Windows only"
+    Write-Host "  .\build.ps1 -Test -Linux     # Test then build Linux"
+    Write-Host "  .\build.ps1 -Version 1.0.0   # Build with version"
+    Write-Host "  .\build.ps1 -Clean           # Clean build dir"
+    Write-Host ""
     exit 0
 }
 
-# ─────────────────────────────────────────────
-# 工具函数
-# ─────────────────────────────────────────────
+# ============================================================
+# Utility Functions
+# ============================================================
 function Write-Header($text) {
     Write-Host ""
-    Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║  $text" -ForegroundColor Cyan -NoNewline
-    Write-Host (" " * (60 - $text.Length)) -NoNewline
-    Write-Host "║" -ForegroundColor Cyan
-    Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "============================================================"
+    Write-Host "  $text"
+    Write-Host "============================================================"
 }
 
 function Write-Step($text) {
-    Write-Host "  → $text" -ForegroundColor Yellow
+    Write-Host "  >> $text"
 }
 
 function Write-Success($text) {
-    Write-Host "  ✅ $text" -ForegroundColor Green
+    Write-Host "  [OK] $text" -ForegroundColor Green
 }
 
-function Write-Error($text) {
-    Write-Host "  ❌ $text" -ForegroundColor Red
+function Write-Fail($text) {
+    Write-Host "  [FAIL] $text" -ForegroundColor Red
 }
 
 function Write-Info($text) {
-    Write-Host "  ℹ️  $text" -ForegroundColor Gray
+    Write-Host "  [INFO] $text" -ForegroundColor Gray
 }
 
 function Test-GoInstalled {
     try {
         $goVersion = go version 2>$null
         if ($goVersion) {
-            Write-Info "Go 版本: $goVersion"
+            Write-Info "Go version: $goVersion"
             return $true
         }
     } catch {
@@ -136,7 +124,7 @@ function Invoke-Build {
         [string]$LdFlags
     )
 
-    Write-Step "编译 [$GOOS/$GOARCH] => $OutputName"
+    Write-Step "Build [$GOOS/$GOARCH] => $OutputName"
 
     $env:GOOS = $GOOS
     $env:GOARCH = $GOARCH
@@ -146,96 +134,92 @@ function Invoke-Build {
 
     try {
         Invoke-Expression $cmd
-        Write-Success "编译成功: $OutputName"
+        Write-Success "Build OK: $OutputName"
     } catch {
-        Write-Error "编译失败: $OutputName"
+        Write-Fail "Build failed: $OutputName"
         throw $_
     }
 }
 
-# ─────────────────────────────────────────────
-# 主流程
-# ─────────────────────────────────────────────
-Write-Header "Zabbix CLI 一键编译脚本"
+# ============================================================
+# Main
+# ============================================================
+Write-Header "Zabbix CLI Build Script"
 
-# 1. 检查 Go 环境
+# 1. Check Go
 if (-not (Test-GoInstalled)) {
-    Write-Error "未检测到 Go 环境，请先安装 Go 1.21+"
+    Write-Fail "Go not found. Please install Go 1.21+"
     exit 1
 }
 
-# 2. 清理模式
+# 2. Clean mode
 if ($Clean) {
-    Write-Step "清理 build 目录..."
+    Write-Step "Cleaning build directory..."
     if (Test-Path $OutputDir) {
         Remove-Item -Recurse -Force $OutputDir
-        Write-Success "build 目录已清理"
+        Write-Success "Build directory cleaned"
     } else {
-        Write-Info "build 目录不存在，无需清理"
+        Write-Info "Build directory does not exist, nothing to clean"
     }
     exit 0
 }
 
-# 3. 先运行测试（如果指定了 -Test）
+# 3. Run tests
 if ($Test) {
-    Write-Header "运行测试"
-    Write-Step "执行 go test ./..."
+    Write-Header "Running Tests"
+    Write-Step "go test ./..."
     try {
         go test ./... -v
-        Write-Success "所有测试通过"
+        Write-Success "All tests passed"
     } catch {
-        Write-Error "测试失败，编译终止"
+        Write-Fail "Tests failed, build aborted"
         exit 1
     }
 }
 
-# 4. 获取版本信息
+# 4. Get version info
 $ldFlags = Get-VersionInfo
-Write-Info "版本信息: $ldFlags"
+Write-Info "Version info: $ldFlags"
 
-# 5. 创建输出目录
+# 5. Create output dir
 New-BuildDir
 
-# 6. 确定编译目标
+# 6. Determine build targets
 $buildWindows = $Windows -or $All -or (-not $Windows -and -not $Linux)
 $buildLinux = $Linux -or $All -or (-not $Windows -and -not $Linux)
 
 $buildCount = 0
 
-# 7. 编译 Windows 版本
+# 7. Build Windows
 if ($buildWindows) {
-    Write-Header "编译 Windows 版本"
+    Write-Header "Building Windows"
 
-    # Windows amd64
     Invoke-Build -GOOS "windows" -GOARCH "amd64" -OutputName "$ProjectName-windows-amd64.exe" -LdFlags $ldFlags
     $buildCount++
 
-    # Windows arm64
     Invoke-Build -GOOS "windows" -GOARCH "arm64" -OutputName "$ProjectName-windows-arm64.exe" -LdFlags $ldFlags
     $buildCount++
 
-    Write-Success "Windows 版本编译完成"
+    Write-Success "Windows build done"
 }
 
-# 8. 跨平台编译 Linux 版本
+# 8. Cross-compile Linux
 if ($buildLinux) {
-    Write-Header "跨平台编译 Linux 版本"
+    Write-Header "Cross-compiling Linux"
 
-    # Linux amd64
     Invoke-Build -GOOS "linux" -GOARCH "amd64" -OutputName "$ProjectName-linux-amd64" -LdFlags $ldFlags
     $buildCount++
 
-    # Linux arm64
     Invoke-Build -GOOS "linux" -GOARCH "arm64" -OutputName "$ProjectName-linux-arm64" -LdFlags $ldFlags
     $buildCount++
 
-    Write-Success "Linux 版本编译完成"
+    Write-Success "Linux build done"
 }
 
-# 9. 输出摘要
-Write-Header "编译摘要"
-Write-Info "编译目标数: $buildCount"
-Write-Info "输出目录: $OutputDir"
+# 9. Summary
+Write-Header "Build Summary"
+Write-Info "Targets built: $buildCount"
+Write-Info "Output dir: $OutputDir"
 Write-Info ""
 
 if (Test-Path $OutputDir) {
@@ -245,9 +229,10 @@ if (Test-Path $OutputDir) {
     }
 }
 
-Write-Success "编译完成！"
+Write-Host ""
+Write-Success "Build complete!"
 Write-Info ""
-Write-Info "使用示例:"
-Write-Info "  Windows: $OutputDir\\$ProjectName-windows-amd64.exe -h"
+Write-Info "Usage examples:"
+Write-Info "  Windows: $OutputDir\$ProjectName-windows-amd64.exe -h"
 Write-Info "  Linux:   ./$ProjectName-linux-amd64 -h"
 Write-Info ""
