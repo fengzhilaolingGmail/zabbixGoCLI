@@ -5,6 +5,15 @@ import (
 	"fmt"
 
 	"zabbix-maint/internal/api"
+	"zabbix-maint/internal/log"
+)
+
+// ANSI color codes
+const (
+	colorGreen  = "\033[32m"
+	colorRed    = "\033[31m"
+	colorYellow = "\033[33m"
+	colorReset  = "\033[0m"
 )
 
 // Manager 配置管理器
@@ -87,25 +96,33 @@ func (m *Manager) GetInstance(name string) (*InstanceConfig, error) {
 func (m *Manager) TestInstance(ctx context.Context, name string) error {
 	inst, err := m.GetInstance(name)
 	if err != nil {
+		log.Errorf("Get instance '%s' failed: %v", name, err)
 		return err
 	}
 	fmt.Printf("Testing connection to %s (%s)...\n", inst.Name, inst.Endpoint)
+	log.Infof("Testing connection to %s (%s)", inst.Name, inst.Endpoint)
 
 	client := api.NewJSONRPCClient(inst.Endpoint)
 	var version string
 	if err := client.Call(ctx, "apiinfo.version", nil, &version); err != nil {
+		log.Errorf("apiinfo.version call failed: %v", err)
+		fmt.Printf(colorRed+"[FAIL] Connection failed: %v\n"+colorReset, err)
 		return fmt.Errorf("connection failed: %w", err)
 	}
-	fmt.Printf("[OK] Connected! Zabbix API version: %s\n", version)
+	fmt.Printf(colorGreen+"[OK] Connected! Zabbix API version: %s\n"+colorReset, version)
+	log.Infof("Zabbix API version: %s", version)
 
 	// 尝试登录验证凭据
 	fmt.Printf("Testing credentials...\n")
+	log.Infof("Testing credentials for user: %s", inst.Auth.Username)
 	authMgr := api.NewAuthManager(inst.Auth.Username, inst.Auth.Password, client)
 	if err := authMgr.Refresh(ctx); err != nil {
-		fmt.Printf("[WARN] Login failed: %v\n", err)
+		log.Warnf("Login failed: %v", err)
+		fmt.Printf(colorYellow+"[WARN] Login failed: %v\n"+colorReset, err)
 		fmt.Printf("[INFO] API endpoint is reachable, but credentials may be incorrect.\n")
 		return nil
 	}
-	fmt.Printf("[OK] Login succeeded!\n")
+	fmt.Printf(colorGreen+"[OK] Login succeeded!\n"+colorReset)
+	log.Infof("Login succeeded for user: %s", inst.Auth.Username)
 	return nil
 }

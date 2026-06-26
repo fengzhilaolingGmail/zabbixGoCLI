@@ -38,7 +38,7 @@ func RunInteractiveMode(ctx context.Context, instanceName string) error {
 
 		if choice == 0 {
 			if tree.Current.Parent == nil {
-				fmt.Println("Bye!")
+				fmt.Println("再见!")
 				return nil
 			}
 			tree.Current = tree.Current.Parent
@@ -55,10 +55,10 @@ func RunInteractiveMode(ctx context.Context, instanceName string) error {
 			fmt.Printf("\n[%s]\n\n", selected.Title)
 
 			if err := selected.Action(ctx, client, ver); err != nil {
-				fmt.Printf("Error: %v\n", err)
+				fmt.Printf("错误: %v\n", err)
 			}
 
-			fmt.Println("\nPress Enter to continue...")
+			fmt.Println("\n按 Enter 继续...")
 			fmt.Scanln()
 		}
 	}
@@ -91,16 +91,16 @@ func printMenu(node *MenuNode) {
 		}
 		fmt.Printf("  %d. %s%s\n", i+1, sub.Title, hint)
 	}
-	fmt.Println("  0. Back/Exit")
+	fmt.Println("  0. 返回/退出")
 	fmt.Println()
 }
 
 func readChoice(max int) (int, error) {
-	fmt.Printf("  Select [0-%d]: ", max)
+	fmt.Printf("  请选择 [0-%d]: ", max)
 	var choice int
 	_, err := fmt.Scanln(&choice)
 	if err != nil || choice < 0 || choice > max {
-		return 0, fmt.Errorf("invalid choice")
+		return 0, fmt.Errorf("无效选择")
 	}
 	return choice, nil
 }

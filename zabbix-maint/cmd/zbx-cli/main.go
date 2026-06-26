@@ -5,20 +5,31 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"zabbix-maint/internal/cli"
 	"zabbix-maint/internal/config"
+	"zabbix-maint/internal/log"
 )
 
 func main() {
 	ctx := context.Background()
 	if err := run(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "\033[31mError: %v\033[0m\n", err)
 		os.Exit(1)
 	}
 }
 
 func run(ctx context.Context) error {
+	// 初始化日志系统
+	logDir, err := os.UserHomeDir()
+	if err == nil {
+		logFile := filepath.Join(logDir, ".zbx-cli", "logs", "zbx-cli.log")
+		if err := log.Init(logFile, "info"); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: log init failed: %v\n", err)
+		}
+	}
+
 	var (
 		instanceFlag = flag.String("i", "", "specify instance name")
 		helpFlag     = flag.Bool("h", false, "show help")
@@ -26,6 +37,8 @@ func run(ctx context.Context) error {
 		versionFlag  = flag.Bool("v", false, "show version")
 	)
 	flag.Parse()
+
+	log.Debugf("Command args: %v", os.Args)
 
 	if *helpFlag || *helpLongFlag {
 		printHelp()
@@ -38,6 +51,7 @@ func run(ctx context.Context) error {
 	}
 
 	args := flag.Args()
+	log.Infof("Starting command: %v", args)
 
 	if len(args) == 0 {
 		instanceName := *instanceFlag
